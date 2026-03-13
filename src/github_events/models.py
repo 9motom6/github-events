@@ -1,7 +1,7 @@
 """Pydantic models for GitHub events."""
 
 from datetime import datetime
-from typing import Literal
+from typing import List, Literal
 
 from pydantic import BaseModel, Field
 
@@ -27,8 +27,7 @@ class BaseEvent(BaseModel):
     type: str
     actor: Actor
     repo: Repo
-    created_at: datetime = Field(alias="createdAt")
-
+    created_at: datetime
 
 class WatchEventPayload(BaseModel):
     """Payload for a WatchEvent."""
@@ -55,7 +54,7 @@ class PullRequestEventPayload(BaseModel):
 
     action: str
     number: int
-    pull_request: PullRequest = Field(alias="pullRequest")
+    pull_request: PullRequest
 
 
 class PullRequestEvent(BaseEvent):
@@ -84,3 +83,11 @@ class IssuesEvent(BaseEvent):
 
     type: Literal["IssuesEvent"]
     payload: IssuesEventPayload
+
+
+class CategorizedEvents(BaseModel):
+    """Represents categorized GitHub events."""
+
+    watch_events: List[WatchEvent] = []
+    pull_request_events: List[PullRequestEvent] = []
+    issues_events: List[IssuesEvent] = []

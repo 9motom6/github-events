@@ -1,0 +1,252 @@
+[
+  {
+    "id": "12345",
+    "type": "WatchEvent",
+    "actor": {
+      "id": 1,
+      "login": "octocat",
+      "display_login": "octocat",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/octocat",
+      "avatar_url": "https://github.com/images/error/octocat_happy.gif"
+    },
+    "repo": {
+      "id": 3,
+      "name": "octocat/Hello-World",
+      "url": "https://api.github.com/repos/octocat/Hello-World"
+    },
+    "payload": {
+      "action": "started"
+    },
+    "public": false,
+    "created_at": "2011-09-06T17:26:27Z",
+    "org": {
+      "id": 1,
+      "login": "github",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/github",
+      "avatar_url": "https://github.com/images/error/octocat_happy.gif"
+    }
+  },
+   {
+    "id": "7386628257",
+    "type": "PullRequestEvent",
+    "actor": {
+      "id": 43880903,
+      "login": "transifex-integration[bot]",
+      "display_login": "transifex-integration",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/transifex-integration[bot]",
+      "avatar_url": "https://avatars.githubusercontent.com/u/43880903?"
+    },
+    "repo": {
+      "id": 2907031,
+      "name": "Cockatrice/Cockatrice",
+      "url": "https://api.github.com/repos/Cockatrice/Cockatrice"
+    },
+    "payload": {
+      "action": "merged",
+      "number": 6692,
+      "pull_request": {
+        "url": "https://api.github.com/repos/Cockatrice/Cockatrice/pulls/6692",
+        "id": 3395005953,
+        "number": 6692,
+        "head": {
+          "ref": "translations_7074394143d24696ae8022c5871b9a86_it",
+          "sha": "6b9070482f9016ccfebce0e0384574dd97731db2",
+          "repo": {
+            "id": 2907031,
+            "url": "https://api.github.com/repos/Cockatrice/Cockatrice",
+            "name": "Cockatrice"
+          }
+        },
+        "base": {
+          "ref": "master",
+          "sha": "aa4592dc9e26c2ea0d08ae68ab7d3b09b77797a8",
+          "repo": {
+            "id": 2907031,
+            "url": "https://api.github.com/repos/Cockatrice/Cockatrice",
+            "name": "Cockatrice"
+          }
+        }
+      }
+    },
+    "public": true,
+    "created_at": "2026-03-13T20:22:48Z",
+    "org": {
+      "id": 9746249,
+      "login": "Cockatrice",
+      "gravatar_id": "",
+      "url": "https://api.github.com/orgs/Cockatrice",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9746249?"
+    }
+  },
+  {
+    "id": "7386628203",
+    "type": "IssuesEvent",
+    "actor": {
+      "id": 258433366,
+      "login": "LinChuang2008",
+      "display_login": "LinChuang2008",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/LinChuang2008",
+      "avatar_url": "https://avatars.githubusercontent.com/u/258433366?"
+    },
+    "repo": {
+      "id": 1160472062,
+      "name": "LinChuang2008/vigilops",
+      "url": "https://api.github.com/repos/LinChuang2008/vigilops"
+    },
+    "payload": {
+      "action": "opened",
+      "issue": {
+        "url": "https://api.github.com/repos/LinChuang2008/vigilops/issues/18",
+        "repository_url": "https://api.github.com/repos/LinChuang2008/vigilops",
+        "labels_url": "https://api.github.com/repos/LinChuang2008/vigilops/issues/18/labels{/name}",
+        "comments_url": "https://api.github.com/repos/LinChuang2008/vigilops/issues/18/comments",
+        "events_url": "https://api.github.com/repos/LinChuang2008/vigilops/issues/18/events",
+        "html_url": "https://github.com/LinChuang2008/vigilops/issues/18",
+        "id": 4073242583,
+        "node_id": "I_kwDORStl_s7yyL_X",
+        "number": 18,
+        "title": "Improve backend test coverage for alert service",
+        "user": {
+          "login": "LinChuang2008",
+          "id": 258433366,
+          "node_id": "U_kgDOD2dhVg",
+          "avatar_url": "https://avatars.githubusercontent.com/u/258433366?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/LinChuang2008",
+          "html_url": "https://github.com/LinChuang2008",
+          "followers_url": "https://api.github.com/users/LinChuang2008/followers",
+          "following_url": "https://api.github.com/users/LinChuang2008/following{/other_user}",
+          "gists_url": "https://api.github.com/users/LinChuang2008/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/LinChuang2008/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/LinChuang2008/subscriptions",
+          "organizations_url": "https://api.github.com/users/LinChuang2008/orgs",
+          "repos_url": "https://api.github.com/users/LinChuang2008/repos",
+          "events_url": "https://api.github.com/users/LinChuang2008/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/LinChuang2008/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "labels": [
+          {
+            "id": 10232123308,
+            "node_id": "LA_kwDORStl_s8AAAACYeHPrA",
+            "url": "https://api.github.com/repos/LinChuang2008/vigilops/labels/help%20wanted",
+            "name": "help wanted",
+            "color": "008672",
+            "default": true,
+            "description": "Extra attention is needed"
+          },
+          {
+            "id": 10232123311,
+            "node_id": "LA_kwDORStl_s8AAAACYeHPrw",
+            "url": "https://api.github.com/repos/LinChuang2008/vigilops/labels/good%20first%20issue",
+            "name": "good first issue",
+            "color": "7057ff",
+            "default": true,
+            "description": "Good for newcomers"
+          }
+        ],
+        "state": "open",
+        "locked": false,
+        "assignees": [
+
+        ],
+        "milestone": null,
+        "comments": 0,
+        "created_at": "2026-03-13T20:22:49Z",
+        "updated_at": "2026-03-13T20:22:49Z",
+        "closed_at": null,
+        "assignee": null,
+        "active_lock_reason": null,
+        "sub_issues_summary": {
+          "total": 0,
+          "completed": 0,
+          "percent_completed": 0
+        },
+        "issue_dependencies_summary": {
+          "blocked_by": 0,
+          "total_blocked_by": 0,
+          "blocking": 0,
+          "total_blocking": 0
+        },
+        "body": "## Description\nThe alert service is a core component but needs better test coverage. This is a great way to learn the codebase.\n\n## Suggested Approach\n- Add unit tests for `backend/app/services/alert_service.py`\n- Cover: alert creation, threshold evaluation, deduplication logic, cooldown handling\n- Use pytest-asyncio for async test support\n\n## Getting Started\n1. Read `backend/app/services/alert_service.py`\n2. Check existing tests in `backend/tests/`\n3. Run: `cd backend && python -m pytest tests/ -x --tb=short`",
+        "reactions": {
+          "url": "https://api.github.com/repos/LinChuang2008/vigilops/issues/18/reactions",
+          "total_count": 0,
+          "+1": 0,
+          "-1": 0,
+          "laugh": 0,
+          "hooray": 0,
+          "confused": 0,
+          "heart": 0,
+          "rocket": 0,
+          "eyes": 0
+        },
+        "timeline_url": "https://api.github.com/repos/LinChuang2008/vigilops/issues/18/timeline",
+        "performed_via_github_app": null,
+        "state_reason": null,
+        "pinned_comment": null
+      }
+    },
+    "public": true,
+    "created_at": "2026-03-13T20:22:49Z"
+  },
+  {
+    "id": "9378595059",
+    "type": "CreateEvent",
+    "actor": {
+      "id": 191095382,
+      "login": "kevin-mathew-atono",
+      "display_login": "kevin-mathew-atono",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/kevin-mathew-atono",
+      "avatar_url": "https://avatars.githubusercontent.com/u/191095382?"
+    },
+    "repo": {
+      "id": 1062903352,
+      "name": "kevin-mathew-atono/sandbox-test",
+      "url": "https://api.github.com/repos/kevin-mathew-atono/sandbox-test"
+    },
+    "payload": {
+      "ref": "kevin-mathew-atono-patch-1",
+      "ref_type": "branch",
+      "full_ref": "refs/heads/kevin-mathew-atono-patch-1",
+      "master_branch": "main",
+      "description": "Github test for sandbox",
+      "pusher_type": "user"
+    },
+    "public": true,
+    "created_at": "2026-03-13T20:16:25Z"
+  },
+  {
+    "id": "9378595055",
+    "type": "PushEvent",
+    "actor": {
+      "id": 84221,
+      "login": "tskisner",
+      "display_login": "tskisner",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/tskisner",
+      "avatar_url": "https://avatars.githubusercontent.com/u/84221?"
+    },
+    "repo": {
+      "id": 189674651,
+      "name": "tskisner/staged-recipes",
+      "url": "https://api.github.com/repos/tskisner/staged-recipes"
+    },
+    "payload": {
+      "repository_id": 189674651,
+      "push_id": 31672067358,
+      "ref": "refs/heads/flacarray",
+      "head": "935d2c3e1cde1493d4c0bb6fc76a5bc1d9449497",
+      "before": "9f06b623aed08c80dc5ce413765827431e5fc656"
+    },
+    "public": true,
+    "created_at": "2026-03-13T20:16:25Z"
+  }
+]
