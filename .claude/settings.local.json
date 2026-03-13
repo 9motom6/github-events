@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv sync:*)",
+      "Bash(set PYTHONPATH=src:*)",
+      "Bash(uv run:*)"
+    ]
+  }
+}
