@@ -15,14 +15,29 @@ class RedisMetricsStore:
     running averages for PR time tracking.
     """
 
-    def __init__(self, redis_url: str = None):
+    def __init__(
+        self,
+        redis_url: str = None,
+        redis_client: redis.Redis = None,
+        max_events_per_type: int = 10000,
+        event_ttl_hours: int = 24,
+    ):
         """Initialize the store.
 
         Args:
             redis_url: Redis connection URL. Defaults to REDIS_URL env var or localhost.
+            redis_client: Optional Redis client for dependency injection.
+            max_events_per_type: Max events to keep per event type. Older ones are trimmed.
+            event_ttl_hours: Hours after which event keys auto-expire.
         """
-        redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
-        self._redis = redis.from_url(redis_url, decode_responses=True)
+        if redis_client:
+            self._redis = redis_client
+        else:
+            redis_url = redis_url or os.getenv("REDIS_URL", "redis://localhost:6379/0")
+            self._redis = redis.from_url(redis_url, decode_responses=True)
+
+        self._max_events_per_type = max_events_per_type
+        self._event_ttl_seconds = event_ttl_hours * 3600
         self._event_counter = 0
 
     def add_pull_request(self, repo_name: str, created_at: datetime) -> None:
@@ -70,7 +85,24 @@ class RedisMetricsStore:
         key = f"events:{event_type}"
         # Use UUID to ensure unique members even with same timestamp
         member = f"{created_at.timestamp()}:{uuid.uuid4()}"
-        self._redis.zadd(key, {member: created_at.timestamp()})
+        score = created_at.timestamp()
+
+        # Add event and set TTL
+        pipe = self._redis.pipeline()
+        pipe.zadd(key, {member: score})
+        pipe.expire(key, self._event_ttl_seconds)
+        pipe.execute()
+
+        # Trim old events if over limit
+        self._trim_events(key)
+
+    def _trim_events(self, key: str) -> None:
+        """Remove oldest events if over the max limit."""
+        count = self._redis.zcard(key)
+        if count > self._max_events_per_type:
+            # Remove oldest events (lowest scores)
+            to_remove = count - self._max_events_per_type
+            self._redis.zremrangebyrank(key, 0, to_remove - 1)
 
     def get_event_counts_by_type(self, offset_minutes: int) -> dict[str, int]:
         """Get event counts grouped by type for the given time offset."""
@@ -84,3 +116,24 @@ class RedisMetricsStore:
                 counts[event_type] = count
 
         return counts
+
+    def cleanup(self) -> int:
+        """Manually cleanup old events older than TTL.
+
+        Returns:
+            Number of keys removed.
+        """
+        removed = 0
+        for key in self._redis.scan_iter(match="events:*"):
+            cutoff = datetime.now(timezone.utc).timestamp() - self._event_ttl_seconds
+            deleted = self._redis.zremrangebyscore(key, "-inf", cutoff)
+            removed += deleted
+
+        # Clean up empty PR keys older than 7 days
+        for key in self._redis.scan_iter(match="pr:*"):
+            data = self._redis.hgetall(key)
+            if data and int(data.get("count", 0)) == 0:
+                # No PRs, check if old and delete
+                self._redis.delete(key)
+
+        return removed

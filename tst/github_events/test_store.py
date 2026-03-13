@@ -1,7 +1,6 @@
 """Unit tests for RedisMetricsStore."""
 
 from datetime import datetime, timezone, timedelta
-from unittest.mock import patch
 
 import fakeredis
 import pytest
@@ -18,9 +17,7 @@ def fake_redis():
 @pytest.fixture
 def store(fake_redis):
     """Create a RedisMetricsStore with fake Redis."""
-    with patch("github_events.store.redis.from_url") as mock_from_url:
-        mock_from_url.return_value = fake_redis
-        return RedisMetricsStore(redis_url="redis://fake:6379/0")
+    return RedisMetricsStore(redis_client=fake_redis, max_events_per_type=5)
 
 
 class TestPullRequestMetrics:
@@ -128,3 +125,15 @@ class TestEventCounts:
         result = store.get_event_counts_by_type(10)
         # Only 2 events within the last 10 minutes
         assert result == {"PullRequestEvent": 2}
+
+    def test_trim_old_events(self, store):
+        """Events should be trimmed when exceeding max limit."""
+        now = datetime.now(timezone.utc)
+
+        # Add 7 events (max is 5)
+        for i in range(7):
+            store.add_event("PullRequestEvent", now - timedelta(minutes=i))
+
+        result = store.get_event_counts_by_type(60)
+        # Should only keep 5 newest
+        assert result["PullRequestEvent"] == 5
