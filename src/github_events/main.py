@@ -24,7 +24,7 @@ app = FastAPI(
 )
 
 
-@app.get("/", tags=["Health"])
-async def read_root():
-    """Fetch and return GitHub events."""
+@app.get("/wanted_events", tags=["Health"])
+async def wanted_events():
+    """Fetch and return GitHub WatchEvent, PullRequestEvent and IssuesEvent."""
     return await app.state.github_client.get_events()
