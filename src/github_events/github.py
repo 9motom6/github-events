@@ -82,7 +82,7 @@ class GitHubClient:
         """
         elapsed = time.monotonic() - self._last_call_time
         if elapsed < self._poll_interval:
-            logging.info(f"Cooldown active: {self._poll_interval - elapsed:.1f}s left.")
+            logging.debug(f"Cooldown active: {self._poll_interval - elapsed:.1f}s left.")
             return False
         return True
     

@@ -91,3 +91,4 @@ class CategorizedEvents(BaseModel):
     watch_events: List[WatchEvent] = []
     pull_request_events: List[PullRequestEvent] = []
     issues_events: List[IssuesEvent] = []
+    

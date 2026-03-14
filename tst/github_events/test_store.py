@@ -6,6 +6,13 @@ import fakeredis
 import pytest
 
 from github_events.store import RedisMetricsStore
+from github_events.responses import (
+    Status,
+    EventsStatus,
+    EventConfig,
+    PullRequestsStatus,
+    PullRequestRepoStats,
+)
 
 
 @pytest.fixture
@@ -146,10 +153,10 @@ class TestStatus:
         """Empty store should return zero counts."""
         result = store.get_status()
 
-        assert result["events"]["total"] == 0
-        assert result["events"]["by_type"] == {}
-        assert result["pull_requests"]["repositories_tracked"] == 0
-        assert result["pull_requests"]["repositories"] == {}
+        assert result.events.total == 0
+        assert result.events.by_type == {}
+        assert result.pull_requests.repositories_tracked == 0
+        assert result.pull_requests.repositories == {}
 
     def test_status_with_events(self, store):
         """Status should reflect stored events."""
@@ -161,10 +168,10 @@ class TestStatus:
 
         result = store.get_status()
 
-        assert result["events"]["total"] == 3
-        assert result["events"]["by_type"]["PullRequestEvent"] == 1
-        assert result["events"]["by_type"]["WatchEvent"] == 2
-        assert result["events"]["config"]["max_per_type"] == 5
+        assert result.events.total == 3
+        assert result.events.by_type["PullRequestEvent"] == 1
+        assert result.events.by_type["WatchEvent"] == 2
+        assert result.events.config.max_per_type == 5
 
     def test_status_with_prs(self, store):
         """Status should reflect stored PR data."""
@@ -176,26 +183,39 @@ class TestStatus:
 
         result = store.get_status()
 
-        assert result["pull_requests"]["repositories_tracked"] == 1
-        assert "owner/repo1" in result["pull_requests"]["repositories"]
+        assert result.pull_requests.repositories_tracked == 1
+        assert "owner/repo1" in result.pull_requests.repositories
         # count stores number of completed deltas (PRs - 1), so 2 PRs = 1 delta
-        assert result["pull_requests"]["repositories"]["owner/repo1"]["count"] == 1
-        assert result["pull_requests"]["repositories"]["owner/repo1"]["average_pr_time_seconds"] == 3600.0
+        assert result.pull_requests.repositories["owner/repo1"].count == 1
+        assert result.pull_requests.repositories["owner/repo1"].average_pr_time_seconds == 3600.0
 
 
-    def test_status_with_multiple_repos(self, store):
+    def test_status_with_multiple_repos(self, store: RedisMetricsStore):
         """Status should reflect multiple PR repositories."""
         now = datetime.now(timezone.utc)
         store.add_pull_request("owner/repo1", now - timedelta(hours=1))
         store.add_pull_request("owner/repo1", now)
         store.add_pull_request("owner/repo2", now)
+        expected = Status(
+            events=EventsStatus(
+                total=0,
+                by_type={},
+                config=EventConfig(max_per_type=5, ttl_hours=24.0),
+            ),
+            pull_requests=PullRequestsStatus(
+                repositories_tracked=2,
+                repositories={
+                    "owner/repo1": PullRequestRepoStats(
+                        count=1, average_pr_time_seconds=3600.0
+                    ),
+                    "owner/repo2": PullRequestRepoStats(
+                        count=0, average_pr_time_seconds=None
+                    ),
+                },
+            ),
+            redis_info=None,
+        )
 
         status = store.get_status()
 
-        assert status["pull_requests"]["repositories_tracked"] == 2
-        # count stores number of completed deltas (PRs - 1)
-        assert status["pull_requests"]["repositories"]["owner/repo1"]["count"] == 1
-        assert status["pull_requests"]["repositories"]["owner/repo1"]["average_pr_time_seconds"] == 3600.0
-        # Single PR has no delta yet
-        assert status["pull_requests"]["repositories"]["owner/repo2"]["count"] == 0
-        assert status["pull_requests"]["repositories"]["owner/repo2"]["average_pr_time_seconds"] is None
+        assert status == expected

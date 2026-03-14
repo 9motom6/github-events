@@ -7,6 +7,15 @@ import uuid
 
 import redis
 
+from github_events.responses import (
+    EventConfig,
+    EventsStatus,
+    PullRequestRepoStats,
+    PullRequestsStatus,
+    Status,
+)
+
+
 
 class RedisMetricsStore:
     """Redis implementation of metrics storage.
@@ -147,11 +156,11 @@ class RedisMetricsStore:
 
         return removed
 
-    def get_status(self) -> dict:  # TODO Pydantic models
+    def get_status(self) -> Status:
         """Get the current status of the Redis storage.
 
         Returns:
-            Dictionary containing storage status information.
+            Status object containing storage status information.
         """
         # Get all event counts
         event_counts = {}
@@ -168,10 +177,10 @@ class RedisMetricsStore:
             data = self._redis.hgetall(key)
             if data:
                 repo_name = key.replace("pr:", "")
-                pr_stats[repo_name] = {
-                    "count": int(data.get("count", 0)),
-                    "average_pr_time_seconds": float(data.get("running_avg", 0)) if int(data.get("count", 0)) > 0 else None
-                }
+                pr_stats[repo_name] = PullRequestRepoStats(
+                    count=int(data.get("count", 0)),
+                    average_pr_time_seconds=float(data.get("running_avg", 0)) if int(data.get("count", 0)) > 0 else None
+                )
 
         # Get Redis info if available
         try:
@@ -179,18 +188,18 @@ class RedisMetricsStore:
         except Exception:
             redis_info = None
 
-        return {
-            "events": {
-                "total": event_total,
-                "by_type": event_counts,
-                "config": {
-                    "max_per_type": self._max_events_per_type,
-                    "ttl_hours": self._event_ttl_seconds / 3600
-                }
-            },
-            "pull_requests": {
-                "repositories_tracked": len(pr_stats),
-                "repositories": pr_stats
-            },
-            "redis_info": redis_info
-        }
+        return Status(
+            events=EventsStatus(
+                total=event_total,
+                by_type=event_counts,
+                config=EventConfig(
+                    max_per_type=self._max_events_per_type,
+                    ttl_hours=self._event_ttl_seconds / 3600
+                )
+            ),
+            pull_requests=PullRequestsStatus(
+                repositories_tracked=len(pr_stats),
+                repositories=pr_stats
+            ),
+            redis_info=redis_info
+        )

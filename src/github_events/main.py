@@ -6,10 +6,16 @@ from contextlib import asynccontextmanager
 import time
 
 import httpx
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Request
 
 from github_events.github import GitHubClient
 from github_events.models import CategorizedEvents
+from github_events.responses import (
+    AveragePRTime,
+    EventCounts,
+    Status,
+    TrackedRepos,
+)
 from github_events.store import RedisMetricsStore
 
 
@@ -114,38 +120,43 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+def get_github_client(request: Request) -> GitHubClient:
+    return request.app.state.github_client
+
+def get_store(request: Request) -> RedisMetricsStore:
+    return request.app.state.store
 
 @app.get("/wanted_events")
-async def wanted_events():
+async def wanted_events(github_client: GitHubClient = Depends(get_github_client)) -> CategorizedEvents:
     """Fetch and return GitHub WatchEvent, PullRequestEvent and IssuesEvent."""
-    return await app.state.github_client.get_events()
+    return await github_client.get_events()
 
 
 @app.get("/tracked-repos")
-async def tracked_repos():
+async def tracked_repos(store: RedisMetricsStore = Depends(get_store)) -> TrackedRepos:
     """Return list of repositories that have PR data tracked."""
-    return {"repositories": app.state.store.get_tracked_repos()}
+    return TrackedRepos(store.get_tracked_repos())
 
 
 @app.get("/average-pr-time")
-async def average_pr_time(repository: str):
+async def average_pr_time(repository: str, store: RedisMetricsStore = Depends(get_store)) -> AveragePRTime:
     """Calculate the average time between pull requests for a given repository."""
-    avg_time = app.state.store.get_average_pr_time(repository)
-    return {"repository": repository, "average_pr_time_seconds": avg_time}
+    avg_time = store.get_average_pr_time(repository)
+    return AveragePRTime(repository=repository, average_pr_time_seconds=avg_time)
 
 
 @app.get("/events-count")
-async def events_count(offset: int = 10):
+async def events_count(offset: int = 10, store: RedisMetricsStore = Depends(get_store)) -> EventCounts:
     """Return the total number of events grouped by the event type for a given offset.
 
     The offset determines how much time we want to look back
     i.e., an offset of 10 means we count only the events which have been created in the last 10 minutes.
     """
-    counts = app.state.store.get_event_counts_by_type(offset)
-    return {"offset_minutes": offset, "counts": counts}
+    counts = store.get_event_counts_by_type(offset)
+    return EventCounts(offset_minutes=offset, counts=counts)
 
 
 @app.get("/status")
-async def status():
+async def status(store: RedisMetricsStore = Depends(get_store)) -> Status:
     """Return the status of the Redis storage including counts and stored data."""
-    return app.state.store.get_status()
+    return store.get_status()
