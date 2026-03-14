@@ -21,11 +21,61 @@ Streams GitHub events from the public event firehose and provides metrics via RE
    uv run uvicorn github_events.main:app --reload
    ```
 
-### Docker Compose (for production/Portainer)
+## Deployment
+
+There are two ways to deploy this application using Docker Compose.
+
+### Local Development
+
+The provided `docker-compose.yml` is configured for local development. It will build the Docker image locally and mount the source code, allowing for hot-reloading.
 
 ```bash
 docker-compose up --build
 ```
+
+### Production Deployment (using pre-built image)
+
+For production, it's recommended to use a pre-built Docker image from a container registry like GitHub Container Registry.
+
+1.  **Create a `docker-compose.prod.yml` file with the following content:**
+
+    ```yaml
+    services:
+      redis:
+        image: redis:7-alpine
+        command: >
+          redis-server 
+          --maxmemory 3gb 
+          --maxmemory-policy allkeys-lru
+        ports:
+          - "6379:6379"
+        volumes:
+          - redis_data:/data
+        healthcheck:
+          test: ["CMD", "redis-cli", "ping"]
+          interval: 5s
+          timeout: 3s
+          retries: 5
+
+      app:
+        image: ghcr.io/9motom6/github-events:latest
+        ports:
+          - "8000:8000"
+        environment:
+          - REDIS_URL=redis://redis:6379/0
+        depends_on:
+          redis:
+            condition: service_healthy
+
+    volumes:
+      redis_data:
+    ```
+
+2.  **Run Docker Compose:**
+
+    ```bash
+    docker-compose -f docker-compose.prod.yml up -d
+    ```
 
 ## API Endpoints
 
