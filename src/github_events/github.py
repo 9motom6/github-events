@@ -39,9 +39,11 @@ class GitHubClient:
         If called before the poll_interval has elapsed, or if GitHub
         returns a 304 Not Modified, it returns an empty CategorizedEvents
         object to prevent double-counting metrics.
+
+        Only calls page 1 to follow the rate limits.
         """
         if not self._is_cooldown_finished():
-            return CategorizedEvents()
+            return CategorizedEvents()  # TODO raise a nice error instead?
         try:
             response = await self._fetch_raw_events()
             self._update_metadata(response)

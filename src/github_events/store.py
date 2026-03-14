@@ -137,3 +137,47 @@ class RedisMetricsStore:
                 self._redis.delete(key)
 
         return removed
+
+    def get_status(self) -> dict:  # TODO Pydantic models
+        """Get the current status of the Redis storage.
+
+        Returns:
+            Dictionary containing storage status information.
+        """
+        # Get all event counts
+        event_counts = {}
+        event_total = 0
+        for key in self._redis.scan_iter(match="events:*"):
+            count = self._redis.zcard(key)
+            event_type = key.replace("events:", "")
+            event_counts[event_type] = count
+            event_total += count
+
+        # Get all PR repository stats
+        pr_stats = {}
+        for key in self._redis.scan_iter(match="pr:*"):
+            data = self._redis.hgetall(key)
+            if data:
+                repo_name = key.replace("pr:", "")
+                pr_stats[repo_name] = {
+                    "count": int(data.get("count", 0)),
+                    "average_pr_time_seconds": float(data.get("running_avg", 0)) if int(data.get("count", 0)) > 0 else None
+                }
+
+        return {
+            "events": {
+                "total": event_total,
+                "by_type": event_counts,
+                "config": {
+                    "max_per_type": self._max_events_per_type,
+                    "ttl_hours": self._event_ttl_seconds / 3600
+                }
+            },
+            "pull_requests": {
+                "repositories_tracked": len(pr_stats),
+                "repositories": pr_stats
+            },
+            "redis_info": {
+                "db": self._redis.info().get("db")
+            }
+        }

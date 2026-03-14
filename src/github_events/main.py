@@ -49,3 +49,9 @@ async def events_count(offset: int = 10):
     """
     counts = app.state.store.get_event_counts_by_type(offset)
     return {"offset_minutes": offset, "counts": counts}
+
+
+@app.get("/status")
+async def status():
+    """Return the status of the Redis storage including counts and stored data."""
+    return app.state.store.get_status()
