@@ -164,6 +164,12 @@ class RedisMetricsStore:
                     "average_pr_time_seconds": float(data.get("running_avg", 0)) if int(data.get("count", 0)) > 0 else None
                 }
 
+        # Get Redis info if available
+        try:
+            redis_info = self._redis.info().get("db")
+        except Exception:
+            redis_info = None
+
         return {
             "events": {
                 "total": event_total,
@@ -177,7 +183,5 @@ class RedisMetricsStore:
                 "repositories_tracked": len(pr_stats),
                 "repositories": pr_stats
             },
-            "redis_info": {
-                "db": self._redis.info().get("db")
-            }
+            "redis_info": redis_info
         }

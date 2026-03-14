@@ -137,3 +137,65 @@ class TestEventCounts:
         result = store.get_event_counts_by_type(60)
         # Should only keep 5 newest
         assert result["PullRequestEvent"] == 5
+
+
+class TestStatus:
+    """Tests for get_status method."""
+
+    def test_empty_status(self, store):
+        """Empty store should return zero counts."""
+        result = store.get_status()
+
+        assert result["events"]["total"] == 0
+        assert result["events"]["by_type"] == {}
+        assert result["pull_requests"]["repositories_tracked"] == 0
+        assert result["pull_requests"]["repositories"] == {}
+
+    def test_status_with_events(self, store):
+        """Status should reflect stored events."""
+        now = datetime.now(timezone.utc)
+
+        store.add_event("PullRequestEvent", now)
+        store.add_event("WatchEvent", now)
+        store.add_event("WatchEvent", now)
+
+        result = store.get_status()
+
+        assert result["events"]["total"] == 3
+        assert result["events"]["by_type"]["PullRequestEvent"] == 1
+        assert result["events"]["by_type"]["WatchEvent"] == 2
+        assert result["events"]["config"]["max_per_type"] == 5
+
+    def test_status_with_prs(self, store):
+        """Status should reflect stored PR data."""
+        now = datetime.now(timezone.utc)
+        earlier = now - timedelta(hours=1)
+
+        store.add_pull_request("owner/repo1", earlier)
+        store.add_pull_request("owner/repo1", now)
+
+        result = store.get_status()
+
+        assert result["pull_requests"]["repositories_tracked"] == 1
+        assert "owner/repo1" in result["pull_requests"]["repositories"]
+        # count stores number of completed deltas (PRs - 1), so 2 PRs = 1 delta
+        assert result["pull_requests"]["repositories"]["owner/repo1"]["count"] == 1
+        assert result["pull_requests"]["repositories"]["owner/repo1"]["average_pr_time_seconds"] == 3600.0
+
+
+    def test_status_with_multiple_repos(self, store):
+        """Status should reflect multiple PR repositories."""
+        now = datetime.now(timezone.utc)
+        store.add_pull_request("owner/repo1", now - timedelta(hours=1))
+        store.add_pull_request("owner/repo1", now)
+        store.add_pull_request("owner/repo2", now)
+
+        status = store.get_status()
+
+        assert status["pull_requests"]["repositories_tracked"] == 2
+        # count stores number of completed deltas (PRs - 1)
+        assert status["pull_requests"]["repositories"]["owner/repo1"]["count"] == 1
+        assert status["pull_requests"]["repositories"]["owner/repo1"]["average_pr_time_seconds"] == 3600.0
+        # Single PR has no delta yet
+        assert status["pull_requests"]["repositories"]["owner/repo2"]["count"] == 0
+        assert status["pull_requests"]["repositories"]["owner/repo2"]["average_pr_time_seconds"] is None

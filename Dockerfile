@@ -5,14 +5,17 @@ WORKDIR /app
 # Install uv
 RUN pip install uv
 
+# Set Python path
+ENV PYTHONPATH=/app/src
+
 # Copy dependency files
-COPY pyproject.toml .
+COPY pyproject.toml uv.lock ./
 
 # Install dependencies
 RUN uv sync --frozen --no-dev
 
 # Copy source
-COPY src/ src/
+COPY src/ ./src/
 
 # Expose port
 EXPOSE 8000

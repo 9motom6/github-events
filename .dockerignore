@@ -3,6 +3,7 @@
 tst
 *.md
 !pyproject.toml
+!uv.lock
 .uv
 __pycache__
 *.pyc

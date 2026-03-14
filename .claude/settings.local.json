@@ -3,7 +3,8 @@
     "allow": [
       "Bash(uv sync:*)",
       "Bash(set PYTHONPATH=src:*)",
-      "Bash(uv run:*)"
+      "Bash(uv run:*)",
+      "Bash(cd D:/LocalProjects/github-events && PYTHONPATH=src uv run python -c \"from github_events.main import app; print\\('App imported successfully'\\)\")"
     ]
   }
 }
