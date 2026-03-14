@@ -70,6 +70,15 @@ class RedisMetricsStore:
             "count": str(count + 1)
         })
 
+    def get_tracked_repos(self) -> list[str]:
+        """Get list of all repositories that have PR data tracked."""
+        repos = []
+        for key in self._redis.scan_iter(match="pr:*"):
+            data = self._redis.hgetall(key)
+            if data and int(data.get("count", 0)) > 0:
+                repos.append(key.replace("pr:", ""))
+        return sorted(repos)
+
     def get_average_pr_time(self, repo_name: str) -> Optional[float]:
         """Get the average time between pull requests for a repository."""
         key = f"pr:{repo_name}"

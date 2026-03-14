@@ -121,6 +121,12 @@ async def wanted_events():
     return await app.state.github_client.get_events()
 
 
+@app.get("/tracked-repos")
+async def tracked_repos():
+    """Return list of repositories that have PR data tracked."""
+    return {"repositories": app.state.store.get_tracked_repos()}
+
+
 @app.get("/average-pr-time")
 async def average_pr_time(repository: str):
     """Calculate the average time between pull requests for a given repository."""
