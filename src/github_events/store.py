@@ -29,7 +29,7 @@ class RedisMetricsStore:
         redis_url: str = None,
         redis_client: redis.Redis = None,
         max_events_per_type: int = 10000,
-        event_ttl_hours: int = 24,
+        event_ttl_hours: int = 72,
     ):
         """Initialize the store.
 
@@ -156,8 +156,11 @@ class RedisMetricsStore:
 
         return removed
 
-    def get_status(self) -> Status:
+    def get_status(self, min_pr_count: int = 0) -> Status:
         """Get the current status of the Redis storage.
+
+        Args:
+            min_pr_count: Minimum number of pull requests for a repository to be included.
 
         Returns:
             Status object containing storage status information.
@@ -176,11 +179,13 @@ class RedisMetricsStore:
         for key in self._redis.scan_iter(match="pr:*"):
             data = self._redis.hgetall(key)
             if data:
-                repo_name = key.replace("pr:", "")
-                pr_stats[repo_name] = PullRequestRepoStats(
-                    count=int(data.get("count", 0)),
-                    average_pr_time_seconds=float(data.get("running_avg", 0)) if int(data.get("count", 0)) > 0 else None
-                )
+                count = int(data.get("count", 0))
+                if count >= min_pr_count:
+                    repo_name = key.replace("pr:", "")
+                    pr_stats[repo_name] = PullRequestRepoStats(
+                        count=count,
+                        average_pr_time_seconds=float(data.get("running_avg", 0)) if count > 0 else None
+                    )
 
         # Get Redis info if available
         try:

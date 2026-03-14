@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 import time
 
 import httpx
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Query, Request
 
 from github_events.github import GitHubClient
 from github_events.models import CategorizedEvents
@@ -135,7 +135,7 @@ async def wanted_events(github_client: GitHubClient = Depends(get_github_client)
 @app.get("/tracked-repos")
 async def tracked_repos(store: RedisMetricsStore = Depends(get_store)) -> TrackedRepos:
     """Return list of repositories that have PR data tracked."""
-    return TrackedRepos(store.get_tracked_repos())
+    return TrackedRepos(repositories=store.get_tracked_repos())
 
 
 @app.get("/average-pr-time")
@@ -147,7 +147,7 @@ async def average_pr_time(repository: str, store: RedisMetricsStore = Depends(ge
 
 @app.get("/events-count")
 async def events_count(offset: int = 10, store: RedisMetricsStore = Depends(get_store)) -> EventCounts:
-    """Return the total number of events grouped by the event type for a given offset.
+    """Return the total number of events grouped by the event type in given offset.
 
     The offset determines how much time we want to look back
     i.e., an offset of 10 means we count only the events which have been created in the last 10 minutes.
@@ -157,6 +157,9 @@ async def events_count(offset: int = 10, store: RedisMetricsStore = Depends(get_
 
 
 @app.get("/status")
-async def status(store: RedisMetricsStore = Depends(get_store)) -> Status:
+async def status(
+    store: RedisMetricsStore = Depends(get_store),
+    min_pr_count: int = Query(2, description="Minimum number of pull requests for a repository to be included in the status.")
+) -> Status:
     """Return the status of the Redis storage including counts and stored data."""
-    return store.get_status()
+    return store.get_status(min_pr_count=min_pr_count)
