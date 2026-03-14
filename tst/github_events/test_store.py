@@ -24,7 +24,7 @@ def fake_redis():
 @pytest.fixture
 def store(fake_redis):
     """Create a RedisMetricsStore with fake Redis."""
-    return RedisMetricsStore(redis_client=fake_redis, max_events_per_type=5)
+    return RedisMetricsStore(redis_client=fake_redis, max_events_per_type=5, event_ttl_hours=24)
 
 
 class TestPullRequestMetrics:
