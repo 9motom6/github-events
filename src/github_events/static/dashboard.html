@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub Event Monitor Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background: #f0f2f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1a1a1a;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>GitHub Activity Dashboard</h1>
+        <div class="chart-wrapper">
+            <canvas id="eventsChart"></canvas>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Monitor Status</h3>
+                <div id="status-text">Loading...</div>
+            </div>
+            <div class="stat-card">
+                <h3>Last Updated</h3>
+                <div id="update-time">-</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        let myChart;
+
+        async function refreshData() {
+
+            try {
+                const response = await fetch('/metrics/events?offset=100');
+
+                if (!response.ok) {
+                    throw new Error("API request failed");
+                }
+
+                const data = await response.json();
+
+                const counts = data.counts || {};
+                const offset = data.offset_minutes || 0;
+
+                const labels = Object.keys(counts);
+                const values = Object.values(counts);
+
+                const ctx = document.getElementById('eventsChart').getContext('2d');
+
+                if (!myChart) {
+                    myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: `Events (Last ${offset} mins)`,
+                                data: values,
+                                backgroundColor: labels.map(() => '#58a6ff'),
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    myChart.data.labels = labels;
+                    myChart.data.datasets[0].data = values;
+                    myChart.data.datasets[0].label = `Events (Last ${offset} mins)`;
+                    myChart.update();
+                }
+                document.getElementById('status-text').innerText = "Live / Connected";
+                document.getElementById('update-time').innerText = new Date().toLocaleTimeString();
+            } catch (err) {
+                document.getElementById('status-text').innerText = "Connection Error";
+                console.error(err);
+
+            }
+
+        }
+
+        refreshData();
+        setInterval(refreshData, 30000);
+
+    </script>
+</body>
+</html>

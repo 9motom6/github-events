@@ -1,6 +1,8 @@
 """FastAPI route handlers."""
 
+import os
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import FileResponse
 
 from github_events.dependencies import get_store
 from github_events.responses import (
@@ -12,6 +14,10 @@ from github_events.responses import (
 from github_events.store import RedisMetricsStore
 
 router = APIRouter(prefix="/metrics")
+
+# Get the path to the directory where this file (routes.py) lives
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+DASHBOARD_PATH = os.path.join(CURRENT_DIR, "static", "dashboard.html")
 
 
 @router.get("/pr-stats/{owner}/{repo}", tags=["Github Event Monitor"])
@@ -37,6 +43,13 @@ async def events_count(
     counts = store.get_event_counts_by_type(offset)
     return EventCounts(offset_minutes=offset, counts=counts)
 
+@router.get("/dashboard", response_class=FileResponse, tags=["Dashboard"])
+async def get_dashboard():
+    """Serve the dashboard HTML file."""
+    if not os.path.exists(DASHBOARD_PATH):
+        # Fallback or error if file is missing
+        return {"error": "Dashboard file not found"}
+    return DASHBOARD_PATH
 
 @router.get("/tracked-repos", tags=["Debug"])
 async def tracked_repos(store: RedisMetricsStore = Depends(get_store)) -> TrackedRepos:
