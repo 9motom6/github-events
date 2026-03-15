@@ -2,15 +2,22 @@
 
 import asyncio
 import logging
+import os
 
 import httpx
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 
 from github_events.github import GitHubClient
 from github_events.routes import router
 from github_events.store import RedisMetricsStore
 from github_events.worker import run_github_streamer
+
+
+# Get the path to the directory where this file (main.py) lives
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+INDEX_PATH = os.path.join(CURRENT_DIR, "static", "index.html")
 
 
 @asynccontextmanager
@@ -53,3 +60,12 @@ app = FastAPI(
 )
 
 app.include_router(router)
+
+
+@app.get("/", response_class=FileResponse, tags=["Root"])
+async def read_root():
+    """Serve the index HTML file."""
+    if not os.path.exists(INDEX_PATH):
+        # Fallback or error if file is missing
+        return {"error": "Index file not found"}
+    return INDEX_PATH
