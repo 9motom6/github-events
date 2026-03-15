@@ -2,25 +2,7 @@
 
 Streams GitHub events from the public event firehose and provides metrics via REST API.
 
-## Quick Start
-
-### Prerequisites (if not using docker-compose)
-
-- uv
-- Python 3.14+
-- Redis
-
-### Development
-
-1. Start Redis locally:
-   ```bash
-   docker run -p 6379:6379 redis:7-alpine
-   ```
-
-2. Run the app:
-   ```bash
-   uv run uvicorn github_events.main:app --reload
-   ```
+The app is deployed at https://github-event-monitor.444424444.xyz
 
 ## Deployment
 
