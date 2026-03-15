@@ -1,6 +1,8 @@
 services:
   redis:
     image: redis:7-alpine
+    container_name: github_monitor_redis
+    restart: always
     command: >
       redis-server 
       --maxmemory 3gb 
@@ -14,6 +16,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   app:
     build: .
@@ -24,8 +31,11 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    volumes:
-      - ./src:/app/src
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   redis_data:
