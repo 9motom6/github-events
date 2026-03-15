@@ -11,23 +11,24 @@ from github_events.responses import (
 )
 from github_events.store import RedisMetricsStore
 
-router = APIRouter()
+router = APIRouter(prefix="/metrics")
 
 
-@router.get("/average-pr-time", tags=["Github Event Monitor"])
+@router.get("/pr-stats/{owner}/{repo}", tags=["Github Event Monitor"])
 async def average_pr_time(
-    repository: str, store: RedisMetricsStore = Depends(get_store)
+    owner: str, repo: str, store: RedisMetricsStore = Depends(get_store)
 ) -> AveragePRTime:
     """Calculate the average time between pull requests for a given repository."""
+    repository = f"{owner}/{repo}"
     avg_time = store.get_average_pr_time(repository)
     return AveragePRTime(repository=repository, average_pr_time_seconds=avg_time)
 
 
-@router.get("/events-count", tags=["Github Event Monitor"])
+@router.get("/events", tags=["Github Event Monitor"])
 async def events_count(
     offset: int = Query(
         10,
-        description="The offset determines how much time we want to look back. " \
+        description="The offset determines how much time we want to look back. "
         "i.e., an offset of 10 means we count only the events which have been created in the last 10 minutes.",
     ),
     store: RedisMetricsStore = Depends(get_store),

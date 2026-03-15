@@ -43,6 +43,8 @@ For production, it's recommended to use a pre-built Docker image from a containe
     services:
       redis:
         image: redis:7-alpine
+        container_name: github_monitor_redis
+        restart: always
         command: >
           redis-server 
           --maxmemory 3gb 
@@ -56,9 +58,16 @@ For production, it's recommended to use a pre-built Docker image from a containe
           interval: 5s
           timeout: 3s
           retries: 5
+        logging:
+          driver: "json-file"
+          options:
+            max-size: "10m"
+            max-file: "3"
 
       app:
         image: ghcr.io/9motom6/github-events:latest
+        container_name: github_monitor_app
+        restart: always
         ports:
           - "8000:8000"
         environment:
@@ -66,9 +75,14 @@ For production, it's recommended to use a pre-built Docker image from a containe
         depends_on:
           redis:
             condition: service_healthy
+        logging:
+          driver: "json-file"
+          options:
+            max-size: "10m"
+            max-file: "3"
 
-    volumes:
-      redis_data:
+      volumes:
+    redis_data:
     ```
 
 2.  **Run Docker Compose:**
